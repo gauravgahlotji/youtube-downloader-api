@@ -42,10 +42,11 @@ fi
 apt-get clean 2>/dev/null || true
 rm -f /swapfile 2>/dev/null || true
 
-# Stop conflicting old docker containers if running
+# Stop conflicting old docker containers & processes on port 8000
 docker compose down 2>/dev/null || docker-compose down 2>/dev/null || true
 pkill -9 -f gunicorn 2>/dev/null || true
 pkill -9 -f uvicorn 2>/dev/null || true
+fuser -k 8000/tcp 2>/dev/null || true
 
 # 4. Smart Swap Space Allocation based on available disk space
 TOTAL_SWAP=$(free -m | awk '/^Swap:/{print $2}')
@@ -81,7 +82,7 @@ INSTALL_DIR="$(pwd)"
 echo -e "${BLUE}[STEP 1/9] Setting up installation directory: ${INSTALL_DIR}${NC}"
 
 # 5. Install System Packages
-echo -e "${BLUE}[STEP 2/9] Installing system packages & dependencies (FFmpeg, Python3, Nginx, UFW, Curl)...${NC}"
+echo -e "${BLUE}[STEP 2/9] Installing system packages & dependencies (FFmpeg, Python3, Nginx, UFW, Curl, Psmisc)...${NC}"
 apt-get update -y
 apt-get install -y --no-install-recommends \
     python3 \
@@ -94,6 +95,7 @@ apt-get install -y --no-install-recommends \
     unzip \
     nginx \
     ufw \
+    psmisc \
     ca-certificates
 
 # Install Deno JS runtime non-interactively for yt-dlp engine if missing
@@ -150,9 +152,10 @@ fi
 API_KEY_VAL=$(grep "^API_KEY=" "$ENV_FILE" | cut -d '=' -f2 | tr -d '"')
 SECRET_KEY_VAL=$(grep "^SECRET_KEY=" "$ENV_FILE" | cut -d '=' -f2 | tr -d '"')
 
-# Kill any leftover old standalone Gunicorn/Uvicorn processes
+# Kill any leftover old standalone Gunicorn/Uvicorn processes & free Port 8000
 pkill -9 -f gunicorn 2>/dev/null || true
 pkill -9 -f uvicorn 2>/dev/null || true
+fuser -k 8000/tcp 2>/dev/null || true
 
 # 9. Create & Configure Systemd Service
 echo -e "${BLUE}[STEP 6/9] Creating Systemd service (yt-dlp-api.service)...${NC}"
