@@ -38,24 +38,44 @@ if [ -f /etc/os-release ]; then
     fi
 fi
 
-# 3. Swap Space Check (Prevents Out-Of-Memory / Killed apt-get on 512MB/1GB VPS instances)
+# 3. Clean APT cache & temporary files to free up disk space
+apt-get clean 2>/dev/null || true
+rm -f /swapfile 2>/dev/null || true
+
+# 4. Smart Swap Space Allocation based on available disk space
 TOTAL_SWAP=$(free -m | awk '/^Swap:/{print $2}')
 if [ "${TOTAL_SWAP:-0}" -eq 0 ]; then
-    echo -e "${YELLOW}[MEMORY] Low Swap memory detected. Creating 2GB swap space to ensure smooth installation...${NC}"
-    fallocate -l 2G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=2048
-    chmod 600 /swapfile
-    mkswap /swapfile 2>/dev/null || true
-    swapon /swapfile 2>/dev/null || true
-    if ! grep -q '/swapfile' /etc/fstab; then
-        echo '/swapfile none swap sw 0 0' >> /etc/fstab
+    FREE_MB=$(df -m / | awk 'NR==2 {print $4}')
+    echo -e "${YELLOW}[MEMORY] Checking free disk space: ${FREE_MB} MB available.${NC}"
+    
+    SWAP_SIZE=0
+    if [ "$FREE_MB" -gt 3000 ]; then
+        SWAP_SIZE=2048
+    elif [ "$FREE_MB" -gt 1500 ]; then
+        SWAP_SIZE=1024
+    elif [ "$FREE_MB" -gt 700 ]; then
+        SWAP_SIZE=512
     fi
-    echo -e "${GREEN}[MEMORY] 2GB Swap space configured successfully.${NC}"
+
+    if [ "$SWAP_SIZE" -gt 0 ]; then
+        echo -e "${YELLOW}[MEMORY] Allocating ${SWAP_SIZE}MB swap space to prevent OOM crash...${NC}"
+        (fallocate -l ${SWAP_SIZE}M /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=${SWAP_SIZE} 2>/dev/null || true)
+        chmod 600 /swapfile 2>/dev/null || true
+        mkswap /swapfile 2>/dev/null || true
+        swapon /swapfile 2>/dev/null || true
+        if ! grep -q '/swapfile' /etc/fstab; then
+            echo '/swapfile none swap sw 0 0' >> /etc/fstab 2>/dev/null || true
+        fi
+        echo -e "${GREEN}[MEMORY] ${SWAP_SIZE}MB Swap space configured successfully.${NC}"
+    else
+        echo -e "${YELLOW}[MEMORY] Limited disk space. Skipping Swap creation to preserve disk space.${NC}"
+    fi
 fi
 
 INSTALL_DIR="$(pwd)"
 echo -e "${BLUE}[STEP 1/9] Setting up installation directory: ${INSTALL_DIR}${NC}"
 
-# 4. Install System Packages
+# 5. Install System Packages
 echo -e "${BLUE}[STEP 2/9] Installing system packages & dependencies (FFmpeg, Python3, Nginx, UFW, Curl)...${NC}"
 apt-get update -y
 apt-get install -y --no-install-recommends \
@@ -80,7 +100,7 @@ if ! command -v deno &> /dev/null; then
     fi
 fi
 
-# 5. Create Python Virtual Environment
+# 6. Create Python Virtual Environment
 echo -e "${BLUE}[STEP 3/9] Creating Python Virtual Environment...${NC}"
 VENV_DIR="${INSTALL_DIR}/.venv"
 if [ ! -d "$VENV_DIR" ]; then
@@ -90,7 +110,7 @@ fi
 source "${VENV_DIR}/bin/activate"
 pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# 6. Install Project Dependencies
+# 7. Install Project Dependencies
 echo -e "${BLUE}[STEP 4/9] Installing Python dependencies from requirements.txt...${NC}"
 pip install --no-cache-dir -r "${INSTALL_DIR}/requirements.txt"
 pip install --no-cache-dir -U yt-dlp
@@ -99,7 +119,7 @@ pip install --no-cache-dir -U yt-dlp
 mkdir -p "${INSTALL_DIR}/downloads"
 chmod 775 "${INSTALL_DIR}/downloads"
 
-# 7. Generate .env Configuration File
+# 8. Generate .env Configuration File
 echo -e "${BLUE}[STEP 5/9] Configuring environment variables (.env)...${NC}"
 ENV_FILE="${INSTALL_DIR}/.env"
 if [ ! -f "$ENV_FILE" ]; then
@@ -125,7 +145,7 @@ fi
 API_KEY_VAL=$(grep "^API_KEY=" "$ENV_FILE" | cut -d '=' -f2 | tr -d '"')
 SECRET_KEY_VAL=$(grep "^SECRET_KEY=" "$ENV_FILE" | cut -d '=' -f2 | tr -d '"')
 
-# 8. Create & Configure Systemd Service
+# 9. Create & Configure Systemd Service
 echo -e "${BLUE}[STEP 6/9] Creating Systemd service (yt-dlp-api.service)...${NC}"
 SERVICE_FILE="/etc/systemd/system/yt-dlp-api.service"
 
@@ -150,7 +170,7 @@ systemctl daemon-reload
 systemctl enable yt-dlp-api.service
 systemctl restart yt-dlp-api.service
 
-# 9. Configure Nginx Reverse Proxy
+# 10. Configure Nginx Reverse Proxy
 echo -e "${BLUE}[STEP 7/9] Configuring Nginx reverse proxy...${NC}"
 NGINX_CONF="/etc/nginx/sites-available/yt-dlp-api"
 
@@ -190,14 +210,14 @@ ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/yt-dlp-api
 nginx -t
 systemctl restart nginx
 
-# 10. Configure Firewall (UFW)
+# 11. Configure Firewall (UFW)
 echo -e "${BLUE}[STEP 8/9] Configuring UFW Firewall (Ports 22, 80, 443)...${NC}"
 ufw allow 22/tcp || true
 ufw allow 80/tcp || true
 ufw allow 443/tcp || true
 ufw --force enable || true
 
-# 11. Deployment Verification
+# 12. Deployment Verification
 echo -e "${BLUE}[STEP 9/9] Performing deployment health check verification...${NC}"
 sleep 3
 
