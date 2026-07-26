@@ -145,6 +145,10 @@ fi
 API_KEY_VAL=$(grep "^API_KEY=" "$ENV_FILE" | cut -d '=' -f2 | tr -d '"')
 SECRET_KEY_VAL=$(grep "^SECRET_KEY=" "$ENV_FILE" | cut -d '=' -f2 | tr -d '"')
 
+# Kill any leftover old standalone Gunicorn/Uvicorn processes
+pkill -9 -f gunicorn 2>/dev/null || true
+pkill -9 -f uvicorn 2>/dev/null || true
+
 # 9. Create & Configure Systemd Service
 echo -e "${BLUE}[STEP 6/9] Creating Systemd service (yt-dlp-api.service)...${NC}"
 SERVICE_FILE="/etc/systemd/system/yt-dlp-api.service"
@@ -229,7 +233,7 @@ if [[ "$HEALTH_CHECK" == *"healthy"* ]]; then
     echo -e "==================================================================${NC}"
     echo -e ""
     echo -e "${CYAN}📌 ACCESS URLS:${NC}"
-    echo -e "   - Developer Dashboard:  http://$(curl -s ifconfig.me || echo 'YOUR_SERVER_IP')/dashboard"
+    echo -e "   - Developer Dashboard:  http://$(curl -s ifconfig.me || echo 'YOUR_SERVER_IP')/"
     echo -e "   - OpenAPI / Swagger:    http://$(curl -s ifconfig.me || echo 'YOUR_SERVER_IP')/docs"
     echo -e "   - API Base Endpoint:    http://$(curl -s ifconfig.me || echo 'YOUR_SERVER_IP')/api/v1"
     echo -e ""

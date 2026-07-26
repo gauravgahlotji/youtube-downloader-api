@@ -19,6 +19,7 @@ class SettingsUpdateRequest(BaseModel):
     webhook_url: Optional[str] = None
 
 
+@router.get("/")
 @router.get("/dashboard")
 async def render_dashboard(request: Request):
     return templates.TemplateResponse("dashboard.html", {
