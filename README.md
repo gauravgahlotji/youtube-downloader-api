@@ -1,12 +1,34 @@
 # Enterprise YouTube Downloader API Platform
 
-A high-performance **Enterprise Download Engine API Server** built with FastAPI and `yt-dlp`. 
+A high-performance, production-ready **Enterprise Download Engine API Server** built with FastAPI and `yt-dlp`. 
 
 This server acts as a dedicated download engine for **Laravel**, Node.js, Python, PHP, mobile apps, or any REST API client. End users interact with your main application (e.g. Laravel), while Laravel delegates all video/audio extraction and downloading tasks to this API.
 
 ---
 
-## 🌟 Key Features
+## ⚡ One-Click Production Installation (Ubuntu VPS / AWS EC2)
+
+Deploy the complete API server on **Ubuntu 22.04 LTS** or **Ubuntu 24.04 LTS** (AWS EC2, DigitalOcean, Contabo, Hetzner, etc.) with a single command:
+
+```bash
+git clone https://github.com/gauravgahlotji/youtube-downloader-api.git
+cd youtube-downloader-api
+sudo bash install.sh
+```
+
+### What `install.sh` Automatically Handles:
+1. ✅ **System Packages**: Installs Python3, `venv`, `pip`, FFmpeg, Nginx, UFW, Git, and Deno JS runtime.
+2. ✅ **Virtual Environment**: Creates and configures `.venv` automatically.
+3. ✅ **Dependencies**: Installs `requirements.txt` and updates `yt-dlp` to latest core engine.
+4. ✅ **Environment Configuration**: Auto-generates `.env` file with secure random `API_KEY` and `SECRET_KEY`.
+5. ✅ **Systemd Service**: Creates and enables `yt-dlp-api.service` with auto-start & auto-restart policies (`Restart=always`).
+6. ✅ **Nginx Reverse Proxy**: Configures Nginx on port 80 with WebSocket/SSE support and 600s timeout.
+7. ✅ **Firewall**: Configures UFW firewall for SSH (22), HTTP (80), and HTTPS (443).
+8. ✅ **Health Verification**: Runs deployment verification and displays access URLs & credentials.
+
+---
+
+## 🌟 Key Platform Features
 
 - 🎬 **Multi-Platform Support**: Downloads video, audio, thumbnails, playlists, and metadata from 1000+ supported sites (YouTube, Instagram, TikTok, Facebook, Twitter/X, Vimeo, etc.).
 - 🚀 **17-Step Real-Time Event Pipeline**: Track download jobs step-by-step (`Job Created` → `Validating URL` → `Metadata Started` → `Thumbnail` → `Video Download` → `Audio Download` → `Merge` → `File Verification` → `File Ready` → `Cleanup`).
@@ -18,35 +40,26 @@ This server acts as a dedicated download engine for **Laravel**, Node.js, Python
 
 ---
 
-## 🚀 Quick Start
-
-### 1. Installation & Local Running
+## 💻 Local Development Setup
 
 ```bash
-# Install dependencies
+# 1. Install dependencies
 pip install -r requirements.txt
 
-# Start the API Engine & Developer Dashboard
+# 2. Start the API Engine & Developer Dashboard
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Access the Developer Dashboard at: `http://localhost:8000/dashboard`  
-Access OpenAPI / Swagger Docs at: `http://localhost:8000/docs`
-
-### 2. Docker Compose (Production Deployment)
-
-```bash
-docker compose build
-docker compose up -d
-```
+- **Developer Dashboard**: `http://localhost:8000/dashboard`  
+- **OpenAPI / Swagger Docs**: `http://localhost:8000/docs`
 
 ---
 
 ## 🔑 API Credentials
 
-To integrate your Laravel or client application, grab your credentials from the Developer Dashboard (`http://localhost:8000/dashboard` -> API Credentials tab):
+To integrate your Laravel or client application, grab your credentials from the Developer Dashboard (`http://your-server-ip/dashboard` -> API Credentials tab):
 
-- **API Base URL**: `http://localhost:8000/api/v1`
+- **API Base URL**: `http://your-server-ip/api/v1`
 - **API Key**: `yt_live_9f8d7c6b5a4e3d2c1b0a`
 - **Secret Key**: `sec_k8j7h6g5f4d3s2a1_enterprise_secret`
 
@@ -65,9 +78,9 @@ use Illuminate\Support\Facades\Http;
 
 class DownloadEngineService
 {
-    protected string $apiUrl = 'http://localhost:8000/api/v1';
-    protected string $apiKey = 'yt_live_9f8d7c6b5a4e3d2c1b0a';
-    protected string $secretKey = 'sec_k8j7h6g5f4d3s2a1_enterprise_secret';
+    protected string $apiUrl = 'http://your-server-ip/api/v1';
+    protected string $apiKey = 'YOUR_API_KEY';
+    protected string $secretKey = 'YOUR_SECRET_KEY';
 
     public function startVideoDownload(string $videoUrl, string $quality = 'best', string $format = 'mp4')
     {
@@ -131,6 +144,24 @@ class DownloadEngineService
 | `GET` | `/status` | Active download count, queue status, uptime |
 | `GET` | `/metrics` | CPU %, RAM %, Disk % utilization |
 | `GET` | `/version` | API & yt-dlp core version details |
+
+---
+
+## 🛠 System Management Commands
+
+```bash
+# Check API Service Status
+sudo systemctl status yt-dlp-api
+
+# View Real-Time Service Logs
+sudo journalctl -u yt-dlp-api -f
+
+# Restart API Service
+sudo systemctl restart yt-dlp-api
+
+# Check Nginx Status
+sudo systemctl status nginx
+```
 
 ---
 
