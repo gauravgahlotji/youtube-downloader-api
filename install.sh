@@ -185,9 +185,7 @@ NGINX_CONF="/etc/nginx/sites-available/yt-dlp-api"
 
 cat <<EOF > "$NGINX_CONF"
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-
+    listen 80;
     server_name _;
 
     client_max_body_size 500M;
@@ -210,10 +208,8 @@ server {
 }
 EOF
 
-# Enable site config
-if [ -f /etc/nginx/sites-enabled/default ]; then
-    rm -f /etc/nginx/sites-enabled/default
-fi
+# Clean conflicting site symlinks in sites-enabled
+rm -f /etc/nginx/sites-enabled/* 2>/dev/null || true
 ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/yt-dlp-api
 
 nginx -t
