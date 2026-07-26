@@ -1,0 +1,53 @@
+/* Developer Dashboard Styling */
+:root {
+    --bs-body-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+[data-bs-theme="dark"] {
+    --card-bg-subtle: #1558df;
+}
+
+body {
+    background-color: var(--bs-body-bg);
+    min-height: 100vh;
+}
+
+.fs-7 {
+    font-size: 0.75rem;
+}
+
+.extra-small {
+    font-size: 0.7rem;
+}
+
+.font-monospace {
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+}
+
+.card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.nav-pills .nav-link {
+    color: var(--bs-secondary-color);
+    font-weight: 500;
+}
+
+.nav-pills .nav-link.active {
+    background-color: var(--bs-primary);
+    color: #fff;
+}
+
+.nav-pills .nav-link:hover:not(.active) {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+}
+
+pre code {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.progress-bar-animated {
+    animation: progress-bar-stripes 1s linear infinite;
+}

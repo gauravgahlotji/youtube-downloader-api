@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Developer Dashboard</title>
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-expand-lg border-bottom sticky-top bg-body-tertiary shadow-sm">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-primary" href="#">
+                <i class="bi bi-cloud-arrow-down-fill fs-3"></i>
+                <span>Enterprise Download Engine</span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-7 rounded-pill ms-2">v{{ version }}</span>
+            </a>
+            
+            <div class="d-flex align-items-center gap-3">
+                <span class="d-none d-md-inline-block text-muted small">
+                    <i class="bi bi-circle-fill text-success fs-7 me-1"></i> System Online
+                </span>
+                <button class="btn btn-outline-secondary btn-sm" id="themeToggleBtn" onclick="toggleTheme()">
+                    <i class="bi bi-sun-fill" id="themeIcon"></i>
+                </button>
+                <a href="/docs" target="_blank" class="btn btn-primary btn-sm">
+                    <i class="bi bi-book me-1"></i> OpenAPI Docs
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-4">
+        <div class="row g-4">
+
+            <!-- Sidebar Navigation -->
+            <div class="col-lg-3 col-xl-2">
+                <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 80px;">
+                    <div class="card-body p-3">
+                        <div class="nav flex-column nav-pills gap-1" id="v-pills-tab" role="tablist">
+                            <button class="nav-link active d-flex align-items-center gap-2 text-start py-2.5 px-3 rounded-3" id="tab-overview-btn" data-bs-toggle="pill" data-bs-target="#tab-overview" type="button">
+                                <i class="bi bi-grid-1x2-fill"></i> Overview
+                            </button>
+                            <button class="nav-link d-flex align-items-center gap-2 text-start py-2.5 px-3 rounded-3" id="tab-credentials-btn" data-bs-toggle="pill" data-bs-target="#tab-credentials" type="button">
+                                <i class="bi bi-key-fill"></i> API Credentials
+                            </button>
+                            <button class="nav-link d-flex align-items-center gap-2 text-start py-2.5 px-3 rounded-3" id="tab-playground-btn" data-bs-toggle="pill" data-bs-target="#tab-playground" type="button">
+                                <i class="bi bi-terminal-fill"></i> API Playground
+                            </button>
+                            <button class="nav-link d-flex align-items-center gap-2 text-start py-2.5 px-3 rounded-3" id="tab-live-btn" data-bs-toggle="pill" data-bs-target="#tab-live" type="button">
+                                <i class="bi bi-broadcast"></i> Live Events
+                            </button>
+                            <button class="nav-link d-flex align-items-center gap-2 text-start py-2.5 px-3 rounded-3" id="tab-logs-btn" data-bs-toggle="pill" data-bs-target="#tab-logs" type="button">
+                                <i class="bi bi-receipt-cutoff"></i> Logs Viewer
+                            </button>
+                            <button class="nav-link d-flex align-items-center gap-2 text-start py-2.5 px-3 rounded-3" id="tab-metrics-btn" data-bs-toggle="pill" data-bs-target="#tab-metrics" type="button">
+                                <i class="bi bi-cpu-fill"></i> Health & Metrics
+                            </button>
+                            <button class="nav-link d-flex align-items-center gap-2 text-start py-2.5 px-3 rounded-3" id="tab-settings-btn" data-bs-toggle="pill" data-bs-target="#tab-settings" type="button">
+                                <i class="bi bi-gear-wide-connected"></i> Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="col-lg-9 col-xl-10">
+                <div class="tab-content" id="v-pills-tabContent">
+
+                    <!-- TAB 1: OVERVIEW -->
+                    <div class="tab-pane fade show active" id="tab-overview">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <div class="card border-0 shadow-sm rounded-4 bg-body-tertiary">
+                                    <div class="card-body p-3">
+                                        <div class="text-muted small fw-semibold">ACTIVE DOWNLOADS</div>
+                                        <div class="fs-2 fw-bold text-primary my-1" id="stat-active">0</div>
+                                        <div class="small text-muted"><i class="bi bi-activity me-1"></i> Running Tasks</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-0 shadow-sm rounded-4 bg-body-tertiary">
+                                    <div class="card-body p-3">
+                                        <div class="text-muted small fw-semibold">COMPLETED JOBS</div>
+                                        <div class="fs-2 fw-bold text-success my-1" id="stat-completed">0</div>
+                                        <div class="small text-muted"><i class="bi bi-check-circle me-1"></i> Total Ready</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-0 shadow-sm rounded-4 bg-body-tertiary">
+                                    <div class="card-body p-3">
+                                        <div class="text-muted small fw-semibold">STORAGE USED</div>
+                                        <div class="fs-2 fw-bold text-warning my-1" id="stat-disk-percent">0%</div>
+                                        <div class="small text-muted" id="stat-disk-human">0 GB Free</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-0 shadow-sm rounded-4 bg-body-tertiary">
+                                    <div class="card-body p-3">
+                                        <div class="text-muted small fw-semibold">SERVER UPTIME</div>
+                                        <div class="fs-2 fw-bold text-info my-1" id="stat-uptime">0s</div>
+                                        <div class="small text-muted"><i class="bi bi-clock-history me-1"></i> Engine Running</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Resources & Gauges -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm rounded-4">
+                                    <div class="card-body p-4">
+                                        <h6 class="card-title fw-bold mb-3"><i class="bi bi-cpu text-primary me-2"></i>CPU Utilization</h6>
+                                        <div class="progress mb-2 rounded-pill" style="height: 12px;">
+                                            <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" id="cpu-bar" style="width: 0%;"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between small text-muted">
+                                            <span>Current Load: <strong id="cpu-val">0%</strong></span>
+                                            <span id="cpu-cores">Cores: -</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm rounded-4">
+                                    <div class="card-body p-4">
+                                        <h6 class="card-title fw-bold mb-3"><i class="bi bi-memory text-info me-2"></i>RAM Memory Usage</h6>
+                                        <div class="progress mb-2 rounded-pill" style="height: 12px;">
+                                            <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" id="ram-bar" style="width: 0%;"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between small text-muted">
+                                            <span>Used: <strong id="ram-val">0%</strong></span>
+                                            <span id="ram-human">0 GB</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Downloads Table -->
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                                <h6 class="fw-bold mb-0"><i class="bi bi-list-task text-primary me-2"></i>Recent & Running Jobs</h6>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="fetchDashboardStats()">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+                                </button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="ps-4">Job ID</th>
+                                                <th>Type</th>
+                                                <th>Step</th>
+                                                <th>Progress</th>
+                                                <th>Speed / ETA</th>
+                                                <th class="pe-4 text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="jobs-table-body">
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4 text-muted">No active download jobs. Use API Playground or send an API request to initiate tasks.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: API CREDENTIALS & INTEGRATION CODE GENERATOR -->
+                    <div class="tab-pane fade" id="tab-credentials">
+                        <div class="card border-0 shadow-sm rounded-4 mb-4">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-1"><i class="bi bi-shield-lock-fill text-primary me-2"></i>API Server Credentials</h5>
+                                <p class="text-muted small mb-4">Your Laravel application (or any client project) only requires these credentials to connect directly to the download engine.</p>
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">API BASE URL</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control font-monospace" id="cred-api-url" readonly value="{{ base_url }}/api/v1">
+                                            <button class="btn btn-outline-primary" onclick="copyToClipboard('cred-api-url')"><i class="bi bi-clipboard me-1"></i> Copy</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">API KEY (Public)</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control font-monospace" id="cred-api-key" readonly value="{{ api_key }}">
+                                            <button class="btn btn-outline-primary" onclick="copyToClipboard('cred-api-key')"><i class="bi bi-clipboard me-1"></i> Copy</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">SECRET KEY (Keep Private)</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control font-monospace" id="cred-secret-key" readonly value="{{ secret_key }}">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="toggleSecretVisibility()"><i class="bi bi-eye" id="secretEyeIcon"></i></button>
+                                            <button class="btn btn-outline-primary" onclick="copyToClipboard('cred-secret-key')"><i class="bi bi-clipboard me-1"></i> Copy</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">WEBHOOK CALLBACK URL</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control font-monospace" id="cred-webhook-url" readonly value="{{ webhook_url or base_url + '/api/v1/webhooks/dummy' }}">
+                                            <button class="btn btn-outline-primary" onclick="copyToClipboard('cred-webhook-url')"><i class="bi bi-clipboard me-1"></i> Copy</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Integration Code Snippets Card -->
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h5 class="fw-bold mb-1"><i class="bi bi-code-square text-success me-2"></i>Integration Code Generator</h5>
+                                <p class="text-muted small mb-0">Copy-paste ready code examples pre-configured with HMAC signature calculation for Laravel, PHP, Python, Node.js, and cURL.</p>
+                            </div>
+                            <div class="card-body p-4">
+                                <ul class="nav nav-tabs mb-3" id="codeTabs" role="tablist">
+                                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#code-laravel">Laravel (PHP)</button></li>
+                                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#code-php">Raw PHP</button></li>
+                                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#code-python">Python</button></li>
+                                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#code-node">Node.js</button></li>
+                                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#code-curl">cURL CLI</button></li>
+                                </ul>
+
+                                <div class="tab-content">
+                                    <!-- LARAVEL SNIPPET -->
+                                    <div class="tab-pane fade show active" id="code-laravel">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="small text-muted font-monospace">app/Services/DownloadEngineService.php</span>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="copyCodeSnippet('snippet-laravel')"><i class="bi bi-clipboard me-1"></i> Copy Laravel Code</button>
+                                        </div>
+                                        <pre class="bg-dark text-light p-3 rounded-3 small font-monospace" id="snippet-laravel"><code>&lt;?php
+
+namespace App\Services;
+
+use Illuminate\Support\Facades\Http;
+
+class DownloadEngineService
+{
+    protected string $apiUrl = '{{ base_url }}/api/v1';
+    protected string $apiKey = '{{ api_key }}';
+    protected string $secretKey = '{{ secret_key }}';
+
+    public function startVideoDownload(string $videoUrl, string $quality = 'best', string $format = 'mp4')
+    {
+        $endpoint = $this->apiUrl . '/download/video';
+        $timestamp = time();
+        $nonce = uniqid('n_', true);
+        
+        $body = json_encode([
+            'url' => $videoUrl,
+            'quality' => $quality,
+            'format' => $format,
+            'webhook_url' => route('api.download.webhook')
+        ]);
+
+        $signature = hash_hmac('sha256', "{$this->apiKey}.{$timestamp}.{$nonce}.{$body}", $this->secretKey);
+
+        $response = Http::withHeaders([
+            'X-API-Key' => $this->apiKey,
+            'X-Timestamp' => $timestamp,
+            'X-Nonce' => $nonce,
+            'X-Signature' => $signature,
+            'Content-Type' => 'application/json',
+        ])->withBody($body, 'application/json')->post($endpoint);
+
+        return $response->json();
+    }
+
+    public function checkJobStatus(string $jobId)
+    {
+        $endpoint = $this->apiUrl . "/jobs/{$jobId}";
+        $timestamp = time();
+        $nonce = uniqid('n_', true);
+        $signature = hash_hmac('sha256', "{$this->apiKey}.{$timestamp}.{$nonce}.", $this->secretKey);
+
+        return Http::withHeaders([
+            'X-API-Key' => $this->apiKey,
+            'X-Timestamp' => $timestamp,
+            'X-Nonce' => $nonce,
+            'X-Signature' => $signature,
+        ])->get($endpoint)->json();
+    }
+}</code></pre>
+                                    </div>
+
+                                    <!-- RAW PHP SNIPPET -->
+                                    <div class="tab-pane fade" id="code-php">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="small text-muted font-monospace">download.php</span>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="copyCodeSnippet('snippet-php')"><i class="bi bi-clipboard me-1"></i> Copy PHP Code</button>
+                                        </div>
+                                        <pre class="bg-dark text-light p-3 rounded-3 small font-monospace" id="snippet-php"><code>&lt;?php
+$apiUrl = '{{ base_url }}/api/v1/download/video';
+$apiKey = '{{ api_key }}';
+$secretKey = '{{ secret_key }}';
+$timestamp = time();
+$nonce = bin2hex(random_bytes(8));
+
+$payload = json_encode(['url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'quality' => 'best']);
+$signature = hash_hmac('sha256', "{$apiKey}.{$timestamp}.{$nonce}.{$payload}", $secretKey);
+
+$ch = curl_init($apiUrl);
+curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => $payload,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        'Content-Type: application/json',
+        "X-API-Key: {$apiKey}",
+        "X-Timestamp: {$timestamp}",
+        "X-Nonce: {$nonce}",
+        "X-Signature: {$signature}"
+    ]
+]);
+$response = curl_exec($ch);
+curl_close($ch);
+echo $response;</code></pre>
+                                    </div>
+
+                                    <!-- PYTHON SNIPPET -->
+                                    <div class="tab-pane fade" id="code-python">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="small text-muted font-monospace">client.py</span>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="copyCodeSnippet('snippet-python')"><i class="bi bi-clipboard me-1"></i> Copy Python Code</button>
+                                        </div>
+                                        <pre class="bg-dark text-light p-3 rounded-3 small font-monospace" id="snippet-python"><code>import time
+import hmac
+import hashlib
+import json
+import requests
+
+api_url = "{{ base_url }}/api/v1/download/video"
+api_key = "{{ api_key }}"
+secret_key = "{{ secret_key }}"
+
+timestamp = str(int(time.time()))
+nonce = str(time.time_ns())
+payload = json.dumps({"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "quality": "1080p"})
+
+raw_msg = f"{api_key}.{timestamp}.{nonce}.{payload}".encode('utf-8')
+signature = hmac.new(secret_key.encode('utf-8'), raw_msg, hashlib.sha256).hexdigest()
+
+headers = {
+    "X-API-Key": api_key,
+    "X-Timestamp": timestamp,
+    "X-Nonce": nonce,
+    "X-Signature": signature,
+    "Content-Type": "application/json"
+}
+
+res = requests.post(api_url, data=payload, headers=headers)
+print(res.json())</code></pre>
+                                    </div>
+
+                                    <!-- NODE.JS SNIPPET -->
+                                    <div class="tab-pane fade" id="code-node">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="small text-muted font-monospace">client.js</span>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="copyCodeSnippet('snippet-node')"><i class="bi bi-clipboard me-1"></i> Copy Node.js Code</button>
+                                        </div>
+                                        <pre class="bg-dark text-light p-3 rounded-3 small font-monospace" id="snippet-node"><code>const crypto = require('crypto');
+const axios = require('axios');
+
+const apiUrl = '{{ base_url }}/api/v1/download/video';
+const apiKey = '{{ api_key }}';
+const secretKey = '{{ secret_key }}';
+
+const timestamp = Math.floor(Date.now() / 1000).toString();
+const nonce = crypto.randomBytes(8).toString('hex');
+const body = JSON.stringify({ url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', quality: '720p' });
+
+const signature = crypto.createHmac('sha256', secretKey)
+    .update(`${apiKey}.${timestamp}.${nonce}.${body}`)
+    .digest('hex');
+
+axios.post(apiUrl, body, {
+    headers: {
+        'X-API-Key': apiKey,
+        'X-Timestamp': timestamp,
+        'X-Nonce': nonce,
+        'X-Signature': signature,
+        'Content-Type': 'application/json'
+    }
+}).then(res => console.log(res.data));</code></pre>
+                                    </div>
+
+                                    <!-- cURL SNIPPET -->
+                                    <div class="tab-pane fade" id="code-curl">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="small text-muted font-monospace">Terminal</span>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="copyCodeSnippet('snippet-curl')"><i class="bi bi-clipboard me-1"></i> Copy cURL Code</button>
+                                        </div>
+                                        <pre class="bg-dark text-light p-3 rounded-3 small font-monospace" id="snippet-curl"><code>curl -X POST "{{ base_url }}/api/v1/download/video" \
+  -H "X-API-Key: {{ api_key }}" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "quality": "best", "format": "mp4"}'</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: API PLAYGROUND -->
+                    <div class="tab-pane fade" id="tab-playground">
+                        <div class="card border-0 shadow-sm rounded-4 mb-4">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-1"><i class="bi bi-play-circle-fill text-primary me-2"></i>Interactive API Playground</h5>
+                                <p class="text-muted small mb-4">Test video/audio download jobs and metadata extraction in real time without writing any code.</p>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-8">
+                                        <label class="form-label small fw-bold">VIDEO / MEDIA URL</label>
+                                        <input type="url" class="form-control" id="play-url" placeholder="https://www.youtube.com/watch?v=..." value="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">OPERATION</label>
+                                        <select class="form-select" id="play-action">
+                                            <option value="metadata">Extract Metadata Only</option>
+                                            <option value="video" selected>Download Video (MP4)</option>
+                                            <option value="audio">Download Audio (MP3)</option>
+                                            <option value="thumbnail">Fetch Thumbnail (JPG)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">VIDEO QUALITY</label>
+                                        <select class="form-select" id="play-quality">
+                                            <option value="best" selected>Best Quality</option>
+                                            <option value="1080p">1080p Full HD</option>
+                                            <option value="720p">720p HD</option>
+                                            <option value="480p">480p SD</option>
+                                            <option value="4k">4K Ultra HD</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">FORMAT CONVERSION</label>
+                                        <select class="form-select" id="play-format">
+                                            <option value="mp4" selected>MP4 Video</option>
+                                            <option value="mkv">MKV Video</option>
+                                            <option value="webm">WEBM Video</option>
+                                            <option value="mp3">MP3 Audio</option>
+                                            <option value="m4a">M4A Audio</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end">
+                                        <button class="btn btn-primary w-100 py-2 rounded-3 fw-semibold" id="btn-run-playground" onclick="runPlaygroundTest()">
+                                            <i class="bi bi-send-fill me-1"></i> Send Request
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Response Output -->
+                                <div class="mt-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="small fw-bold text-muted">RESPONSE BODY</span>
+                                        <span class="badge bg-secondary font-monospace" id="play-status-code">HTTP -</span>
+                                    </div>
+                                    <pre class="bg-dark text-light p-3 rounded-3 small font-monospace" id="play-response-body" style="max-height: 350px; overflow-y: auto;"><code>// Response output will appear here...</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: LIVE EVENTS -->
+                    <div class="tab-pane fade" id="tab-live">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="fw-bold mb-0"><i class="bi bi-broadcast text-danger me-2"></i>Real-Time Event Stream</h5>
+                                    <p class="text-muted small mb-0">Live 17-step progress stream captured per second from active download jobs.</p>
+                                </div>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2">
+                                    <i class="bi bi-circle-fill fs-7 me-1"></i> Streaming Active
+                                </span>
+                            </div>
+                            <div class="card-body p-4">
+                                <div id="live-stream-container" class="d-flex flex-column gap-3">
+                                    <div class="alert alert-secondary small mb-0">
+                                        <i class="bi bi-info-circle me-1"></i> Waiting for active download events... Initiate a download task to see step-by-step updates.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 5: LOGS VIEWER -->
+                    <div class="tab-pane fade" id="tab-logs">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold mb-0"><i class="bi bi-receipt-cutoff text-warning me-2"></i>Structured Logs Viewer</h5>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select form-select-sm" id="log-category-filter" onchange="fetchLogs()">
+                                        <option value="">All Categories</option>
+                                        <option value="API_LOGS">API Logs</option>
+                                        <option value="REQUEST_LOGS">Request Logs</option>
+                                        <option value="DOWNLOAD_LOGS">Download Logs</option>
+                                        <option value="WORKER_LOGS">Worker Logs</option>
+                                        <option value="ERROR_LOGS">Error Logs</option>
+                                        <option value="SECURITY_LOGS">Security Logs</option>
+                                        <option value="PERFORMANCE_LOGS">Performance Logs</option>
+                                    </select>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="fetchLogs()"><i class="bi bi-arrow-clockwise"></i></button>
+                                </div>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="bg-dark text-light p-3 rounded-3 font-monospace small" id="logs-container" style="height: 450px; overflow-y: auto;">
+                                    <div class="text-muted">Loading logs...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 6: HEALTH & METRICS -->
+                    <div class="tab-pane fade" id="tab-metrics">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm rounded-4">
+                                    <div class="card-body p-4">
+                                        <h6 class="fw-bold mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>Engine Health Diagnostics</h6>
+                                        <div id="health-details-container">
+                                            <div class="spinner-border spinner-border-sm text-primary me-2"></div> Checking health...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm rounded-4">
+                                    <div class="card-body p-4">
+                                        <h6 class="fw-bold mb-3"><i class="bi bi-info-circle-fill text-info me-2"></i>Version & Platform Info</h6>
+                                        <div id="version-details-container">
+                                            <div class="spinner-border spinner-border-sm text-primary me-2"></div> Fetching details...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 7: SETTINGS -->
+                    <div class="tab-pane fade" id="tab-settings">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-3"><i class="bi bi-gear-wide-connected text-primary me-2"></i>Download Engine Configuration</h5>
+                                
+                                <form id="settingsForm" onsubmit="saveSettings(event)">
+                                    <div class="mb-3 form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="set-enforce-sig">
+                                        <label class="form-check-label fw-bold small" for="set-enforce-sig">Enforce HMAC SHA256 Request Signatures</label>
+                                        <div class="text-muted extra-small">When enabled, requests without valid X-Signature, X-Timestamp, and X-Nonce will be rejected.</div>
+                                    </div>
+
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold">TEMP FILE AUTO-CLEANUP (MINUTES)</label>
+                                            <input type="number" class="form-control" id="set-ttl" value="60">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold">RATE LIMIT (REQUESTS / MINUTE)</label>
+                                            <input type="number" class="form-control" id="set-rate-limit" value="120">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold">MAX CONCURRENT WORKERS</label>
+                                            <input type="number" class="form-control" id="set-max-workers" value="10">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold">DEFAULT WEBHOOK CALLBACK URL</label>
+                                            <input type="url" class="form-control" id="set-webhook" placeholder="https://your-laravel-site.com/api/download/webhook">
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary px-4 rounded-3 fw-semibold">
+                                        <i class="bi bi-save me-1"></i> Save Settings
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast align-items-center text-bg-success border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">Copied to clipboard!</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

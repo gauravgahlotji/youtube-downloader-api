@@ -1,37 +1,42 @@
 import os
 from pathlib import Path
-
-import yt_dlp
 from celery import Celery
-
-DOWNLOAD_DIR = Path('/app/downloads/')
-DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
+from app.core.config import settings
+from app.engine.yt_dlp_engine import YTDLPEngine
+from app.services.job_manager import job_manager
 
 celery = Celery(
     "worker",
-    broker="amqp://guest:guest@rabbitmq:5672//",
-    backend="rpc://",
+    broker=os.getenv("CELERY_BROKER_URL", "amqp://guest:guest@rabbitmq:5672//"),
+    backend=os.getenv("CELERY_RESULT_BACKEND", "rpc://"),
 )
 
 @celery.task
-def download_video_task(url: str, job_id: str) -> str:
-    filepath = os.path.join(DOWNLOAD_DIR, f"{job_id}.mp4")
-    ydl_opts = {
-        "outtmpl": filepath,
-        "format": "best",
-        'js_runtimes': {
-            'deno': {
-                'path': '/home/appuser/.deno/bin/deno'
-            },
-        },
-    }
-
+def download_video_task(url: str, job_id: str, quality: str = "best", format_ext: str = "mp4") -> str:
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+        def update_cb(data):
+            job_manager.update_job(job_id, data)
+
+        filepath = YTDLPEngine.execute_video_download(
+            url=url,
+            job_id=job_id,
+            quality=quality,
+            format_ext=format_ext,
+            update_callback=update_cb
+        )
+        job_manager.update_job(job_id, {
+            "status": "completed",
+            "progress": 100.0,
+            "file_path": filepath,
+            "download_url": f"/api/v1/files/{job_id}"
+        })
+        return filepath
     except Exception as e:
-        log_path = os.path.join(DOWNLOAD_DIR, f"{job_id}.log")
+        log_path = settings.DOWNLOAD_DIR / f"{job_id}.log"
         with open(log_path, 'w') as f:
             f.write(f'{str(e)}\n')
-
-    return filepath
+        job_manager.update_job(job_id, {
+            "status": "failed",
+            "error": str(e)
+        })
+        raise e

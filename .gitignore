@@ -5,3 +5,8 @@ nohup.out
 .vscode/
 Pipfile.lock
 yt-dlp-api.service
+downloads/
+*.mp4
+*.mp3
+*.log
+.env
