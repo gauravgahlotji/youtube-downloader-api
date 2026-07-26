@@ -1,5 +1,9 @@
-import asyncio
+import sys
 import os
+# Force local workspace directory to be first in sys.path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import asyncio
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware

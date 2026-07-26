@@ -116,6 +116,9 @@ fi
 
 source "${VENV_DIR}/bin/activate"
 pip install --no-cache-dir --upgrade pip setuptools wheel
+pip uninstall -y app youtube-downloader-api yt-dlp-api 2>/dev/null || true
+rm -rf "${VENV_DIR}/lib/python"*/site-packages/app 2>/dev/null || true
+find "${INSTALL_DIR}" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
 # 7. Install Project Dependencies
 echo -e "${BLUE}[STEP 4/9] Installing Python dependencies from requirements.txt...${NC}"
@@ -237,7 +240,7 @@ if [[ "$HEALTH_CHECK" == *"healthy"* ]]; then
     echo -e "==================================================================${NC}"
     echo -e ""
     echo -e "${CYAN}📌 ACCESS URLS:${NC}"
-    echo -e "   - Developer Dashboard:  http://$(curl -s ifconfig.me || echo 'YOUR_SERVER_IP')/"
+    echo -e "   - Developer Dashboard:  http://$(curl -s ifconfig.me || echo 'YOUR_SERVER_IP')/dashboard"
     echo -e "   - OpenAPI / Swagger:    http://$(curl -s ifconfig.me || echo 'YOUR_SERVER_IP')/docs"
     echo -e "   - API Base Endpoint:    http://$(curl -s ifconfig.me || echo 'YOUR_SERVER_IP')/api/v1"
     echo -e ""
