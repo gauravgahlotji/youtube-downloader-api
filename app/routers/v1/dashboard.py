@@ -15,6 +15,15 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
+def render_template_response(request: Request, name: str, context: dict):
+    ctx = dict(context)
+    ctx["request"] = request
+    try:
+        return templates.TemplateResponse(request=request, name=name, context=ctx)
+    except Exception:
+        return templates.TemplateResponse(name, ctx)
+
+
 class SettingsUpdateRequest(BaseModel):
     enforce_signature: Optional[bool] = None
     temp_file_ttl: Optional[int] = None
@@ -26,8 +35,7 @@ class SettingsUpdateRequest(BaseModel):
 @router.get("/")
 @router.get("/dashboard")
 async def render_dashboard(request: Request):
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request,
+    return render_template_response(request, "dashboard.html", {
         "title": settings.API_TITLE,
         "version": settings.API_VERSION,
         "api_key": settings.API_KEY,
