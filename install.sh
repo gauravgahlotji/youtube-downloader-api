@@ -42,6 +42,11 @@ fi
 apt-get clean 2>/dev/null || true
 rm -f /swapfile 2>/dev/null || true
 
+# Stop conflicting old docker containers if running
+docker compose down 2>/dev/null || docker-compose down 2>/dev/null || true
+pkill -9 -f gunicorn 2>/dev/null || true
+pkill -9 -f uvicorn 2>/dev/null || true
+
 # 4. Smart Swap Space Allocation based on available disk space
 TOTAL_SWAP=$(free -m | awk '/^Swap:/{print $2}')
 if [ "${TOTAL_SWAP:-0}" -eq 0 ]; then

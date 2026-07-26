@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Optional
 from pydantic import BaseModel
 from fastapi import APIRouter, Request, HTTPException
@@ -8,7 +9,10 @@ from app.services.job_manager import job_manager
 from app.services.cleanup_service import cleanup_service
 
 router = APIRouter(tags=["Developer Dashboard"])
-templates = Jinja2Templates(directory="app/templates")
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+TEMPLATES_DIR = BASE_DIR / "templates"
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
 class SettingsUpdateRequest(BaseModel):
