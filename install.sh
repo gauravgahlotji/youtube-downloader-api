@@ -96,10 +96,10 @@ apt-get install -y --no-install-recommends \
     ufw \
     ca-certificates
 
-# Install Deno JS runtime for yt-dlp engine if missing
+# Install Deno JS runtime non-interactively for yt-dlp engine if missing
 if ! command -v deno &> /dev/null; then
     echo -e "${BLUE}Installing Deno JS runtime for yt-dlp core...${NC}"
-    curl -fsSL https://deno.land/install.sh | sh || true
+    curl -fsSL https://deno.land/install.sh | sh -s -- -y 2>/dev/null || true
     if [ -d "$HOME/.deno/bin" ]; then
         export PATH="$HOME/.deno/bin:$PATH"
     fi
