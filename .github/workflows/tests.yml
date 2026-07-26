@@ -7,18 +7,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get working copy
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
       - name: Set up Python 3.12
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Building the Docker Compose
-        run: docker compose build
-      - name: Running the Docker Compose
-        run: docker compose up -d
-      - name: Run tests
+
+      - name: Install dependencies locally for CI test check
         run: |
-          docker compose exec yt-dlp-api pip install -r requirements-dev.txt
-          docker compose exec yt-dlp-api python -m pytest -s ./app/tests
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run Unit & API Integration Tests
+        run: |
+          python -m unittest discover -s tests
+
+      - name: Building Docker Compose
+        run: docker compose build
+
+      - name: Running Docker Compose
+        run: docker compose up -d
+
+      - name: Wait for container readiness
+        run: sleep 5
+
+      - name: Run tests inside Docker container
+        run: |
+          docker compose exec -T yt-dlp-api python -m unittest discover -s tests

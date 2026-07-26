@@ -23,9 +23,9 @@ services:
     restart: unless-stopped
   yt-dlp-api:
     build: .
-    command: gunicorn -w 4 --bind 0.0.0.0:8000 -k uvicorn.workers.UvicornWorker app.main:app
+    command: gunicorn -w 4 --bind 0.0.0.0:8000 -k uvicorn.workers.UvicornWorker main:app
     volumes:
-      - shared-download:/app/downloads:ro
+      - shared-download:/app/downloads
     ports:
       - "8000:8000"
     deploy:
@@ -43,7 +43,7 @@ services:
   worker:
     build: .
     container_name: celery_worker
-    command: celery -A app.workers.worker.celery worker --loglevel=info
+    command: celery -A workers.worker.celery worker --loglevel=info
     volumes:
       - shared-download:/app/downloads
     deploy:
